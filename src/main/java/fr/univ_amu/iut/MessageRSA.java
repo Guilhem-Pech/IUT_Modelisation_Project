@@ -63,7 +63,7 @@ public class MessageRSA {
     }
 
     private static int randFirstNumber(int a){
-        int r = random_between(2,a)
+        int r = random_between(2,a);
         while (pgcd(a,r) != 1)
          r = random_between(2,a);
         return r;
@@ -71,7 +71,7 @@ public class MessageRSA {
 
     public void generateKey(){
         n = p * q;
-        int phi = (p - 1) * (q-1);
+        int phi = (p - 1) * (q-1); 
         d = randFirstNumber(phi);
         e = euclide(d,phi);
     }
