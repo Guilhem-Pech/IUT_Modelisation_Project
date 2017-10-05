@@ -11,13 +11,17 @@ public class App
 {
     public static void main( String[] args )
     {
-        MessageRSA Hey = new MessageRSA("I love myself");
+        MessageRSA Hey = new MessageRSA("Ceci est un message de test les amis !");
+        System.out.println(Hey.getUncryptedMessage() + " ORIGINAL ");
+        for (int i = 0; i < 100; i++) {
 
-        System.out.println(Hey.getPrivateKeys()[1] + " " +Hey.getPrivateKeys()[0]);
+            MessageRSA toDecrypt = new MessageRSA(Hey.getCryptedMessage(),Hey.getPrivateKeys()[0],Hey.getPrivateKeys()[1]);
+            Hey.generateKey();
+            Hey.cryptString();
 
-        MessageRSA toDecrypt = new MessageRSA(Hey.getCryptedMessage());
-        toDecrypt.setPrivateKey(Hey.getPrivateKeys()[0],Hey.getPrivateKeys()[1]);
-        System.out.println(toDecrypt.getUncryptedMessage());
+            System.out.println(toDecrypt.getUncryptedMessage());
+        }
+
 
     }
 }

@@ -1,8 +1,8 @@
 package fr.univ_amu.iut;
 
 
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
-
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 
 import static java.lang.Math.random;
@@ -14,39 +14,55 @@ import static java.lang.Math.random;
 
 
 public class MessageRSA {
-    private ArrayList<Integer> cryptedmessage;
+    private ArrayList<BigInteger> cryptedmessage;
     private String decryptedMessage;
-    private int n;
-    private int e;
-    private int d;
-    private int p;
-    private int q;
+    private BigInteger n;
+    private BigInteger e;
+    private BigInteger d;
+    private BigInteger p;
+    private BigInteger q;
 
 
-
+    /**
+     * Default constructor
+     */
     public MessageRSA() {
-        cryptedmessage = new ArrayList<Integer>();
+        cryptedmessage = new ArrayList<BigInteger>();
         decryptedMessage = "";
 
     }
 
+    /**
+     * Constructor built the object and crypt the message given
+     * @param message
+     */
     public MessageRSA(String message){
         this();
         decryptedMessage = message;
-        cryptedmessage = new ArrayList<Integer>();
         this.generateKey();
         this.cryptString();
     }
 
 
-
-    public MessageRSA(ArrayList<Integer> message){
+    /**
+     * Constructor built the object and uncrypt a message given with the private key
+     * @param message
+     * @param n
+     * @param d
+     */
+    public MessageRSA(ArrayList<BigInteger> message, BigInteger n, BigInteger d){
         this();
         cryptedmessage = message;
-        decryptedMessage = "";
+        this.setPrivateKey(n,d);
+        this.decryptString();
     }
 
-
+    /**
+     * Generate the Greatest common divisor between 2 numbers
+     * @param a
+     * @param b
+     * @return
+     */
     private static int gcd(int a, int b) {
         int r;
         // Exchange m and n if m < n
@@ -62,52 +78,71 @@ public class MessageRSA {
        return a;
     }
 
-    private static boolean isFirst(int n)
-    {
-        if(n<=1) return false;
-        for(int i = 2;i*i<=n;i++)
-        {
-            if (n%i ==0)
-                return false;
-            i++;
-        }
-        return true;
-    }
-    private static int random_between(int j,int k){
+    /**
+     * Generate an int between 2 int
+     * @param j min
+     * @param k max
+     * @return
+     */
+   private static int random_between(int j,int k){
         return (int) (random()*(k-j+1)+j);
     }
 
-    private static int randFirstNumber(int min,int a){
-        int r = random_between(min,a);
-        while (gcd(a,r) != 1)
-         r = random_between(min,a);
+    private static BigInteger randFirstNumber(BigInteger min,BigInteger a){
+        BigInteger r = random_between(min,a);
+        while (gcd(a.intValue(),r.intValue()) != 1)
+            r = random_between(min,a);
         return r;
     }
 
-    private void generateKey(){
-        p = randFirstNumber(50,100);
-        q = randFirstNumber(50,100);
+    /**
+     * Generate an BigInteger between 2 BigInteger
+     * @param j
+     * @param k
+     * @return
+     */
+    private static BigInteger random_between(BigInteger j, BigInteger k) {
+        return BigInteger.valueOf((long) (random()*(k.longValue()-j.longValue()+1)+j.longValue()));
+    }
 
+    /**
+     * Generate the public and the private key
+     */
+    public void generateKey(){
+        p = BigInteger.probablePrime(5,new SecureRandom());
+        q = BigInteger.probablePrime(5,new SecureRandom());
+        n =   p.multiply(q);
+        BigInteger phi = (p.subtract(BigInteger.ONE)).multiply(q.subtract(BigInteger.ONE));
 
-        n = p*q;
-        int phi = (p - 1) * (q - 1);
-
-        e = randFirstNumber((p<q?q:p),phi);
-        d = modInverse(e,phi);
-
+        e = randFirstNumber(p.compareTo(q)==-1?q:p,phi);
+        d = BigInteger.valueOf(modInverse(e.intValue(),phi.intValue()));
 
     }
 
-    private int cryptInt(int i){
-        System.out.println( "i = " + i+ " " +(i^e)%n  + " " +  decryptInt((i^e)%n));
-        return (i^e)%n;
+    /**
+     * Crypt an int given
+     * @param i
+     * @return
+     */
+    private BigInteger cryptInt(int i){
+        return BigInteger.valueOf(i).pow(e.intValue()).mod(n);//(i^e)%n;
     }
 
-    private int cryptChar(char k){
+    /**
+     * Crypt a given char
+     * @param k
+     * @return
+     */
+    private BigInteger cryptChar(char k){
         return cryptInt((int)k);
     }
 
-    private void cryptString(){
+    /**
+     * Crypt the uncrypted message
+     */
+    public void cryptString(){
+        if (p == null || d == null )
+            this.generateKey();
         cryptedmessage.clear();
         for (char c: decryptedMessage.toCharArray()) {
             cryptedmessage.add(cryptChar(c));
@@ -115,41 +150,66 @@ public class MessageRSA {
 
     }
 
-    private char decryptChar(int i){
-        return (char) ((i^d)%n);
+    /**
+     * Uncrypt an BigInt
+     * @param i
+     * @return
+     */
+    private BigInteger decryptInt(BigInteger i){
+        return  i.pow(d.intValue()).mod(n); //(i^d)%n);
     }
 
-    private int decryptInt(int i){
-        return ((i^d)%n);
-    }
-
-    private void decryptString(){
-        for (int c: cryptedmessage ) {
-            decryptedMessage.concat(String.valueOf(decryptChar(c)));
-            System.out.print(decryptInt(c)+" ");
+    /**
+     * Uncrypt the message
+     */
+    public void decryptString(){
+        decryptedMessage = "";
+        for (BigInteger c: cryptedmessage ) {
+            decryptedMessage += (char)decryptInt(c).intValue();
         }
     }
 
-    public int[] getPublicKeys(){
-        int[] publicKey = {n,e};
+    /**
+     * Get the public key of the message
+     * @return a BigInteger table with [0] == n and [1] == e
+     */
+    public BigInteger[] getPublicKeys(){
+        BigInteger[] publicKey = {n,e};
         return publicKey;
     }
 
-    public int[] getPrivateKeys() {
-        int[] privateKey = {n, d};
+    /**
+     * Get the private key of the message
+     * @return a BigInteger table with [0] == n and [1] == d
+     */
+    public BigInteger[] getPrivateKeys() {
+        BigInteger[] privateKey = {n, d};
         return privateKey;
     }
-    public void setPrivateKey(int n, int d){
+
+    /**
+     * Set manualy the private key on a message
+     * @param n
+     * @param d
+     */
+    public void setPrivateKey(BigInteger n, BigInteger d){
         this.n = n;
         this.d = d;
     }
 
+    /**
+     * Return the crypted message
+     * @return the crypted message in an arraylist
+     */
     public ArrayList getCryptedMessage(){
         return cryptedmessage;
     }
 
+    /**
+     * Return the uncrypted message
+     * @return the string of the uncrypted message
+     */
     public String getUncryptedMessage(){
-        this.decryptString();
         return decryptedMessage;
     }
 
@@ -207,7 +267,6 @@ public class MessageRSA {
         if (g[0] != 1)
             return -1;		// n and mod not coprime
         else
-            System.out.println(n+" mod "+ mod +" = "+ reduce(g[2], mod) );
             return reduce(g[2], mod);
     }
 }
