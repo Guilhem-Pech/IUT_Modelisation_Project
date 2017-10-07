@@ -33,7 +33,7 @@ public class MessageRSA {
     }
 
     /**
-     * Constructor built the object and crypt the message given
+     * This constructor built the object and crypt the message given
      * @param message
      */
     public MessageRSA(String message){
@@ -63,15 +63,15 @@ public class MessageRSA {
      * @param b
      * @return
      */
-    private static int gcd(int a, int b) {
-        int r;
+    private static BigInteger gcd(BigInteger a, BigInteger b) {
+        BigInteger r;
         // Exchange m and n if m < n
-        if (a < b) {
+        if (a.compareTo(b)== -1) {
             r = b;  b = a; a = r;
         }
         // It can be assumed that m >= n
-        while (b > 0) {
-            r = a % b;
+        while (b.compareTo(BigInteger.ZERO) == 1) {
+            r = a.mod(b);
             a = b;
             b = r;
         }
@@ -90,32 +90,38 @@ public class MessageRSA {
 
     private static BigInteger randFirstNumber(BigInteger min,BigInteger a){
         BigInteger r = random_between(min,a);
-        while (gcd(a.intValue(),r.intValue()) != 1)
+        while (!gcd(a,r).equals(BigInteger.ONE))
             r = random_between(min,a);
         return r;
     }
 
     /**
-     * Generate an BigInteger between 2 BigInteger
+     * Generate a BigInteger between 2 BigInteger
      * @param j
      * @param k
      * @return
      */
     private static BigInteger random_between(BigInteger j, BigInteger k) {
-        return BigInteger.valueOf((long) (random()*(k.longValue()-j.longValue()+1)+j.longValue()));
+       return BigInteger.valueOf((long) (random()*(k.longValue()-j.longValue()+1)+j.longValue()));
     }
 
     /**
      * Generate the public and the private key
      */
     public void generateKey(){
+
         p = BigInteger.probablePrime(5,new SecureRandom());
         q = BigInteger.probablePrime(5,new SecureRandom());
+        while(p.equals(q))
+            q = BigInteger.probablePrime(5,new SecureRandom());
+
+
         n =   p.multiply(q);
         BigInteger phi = (p.subtract(BigInteger.ONE)).multiply(q.subtract(BigInteger.ONE));
 
         e = randFirstNumber(p.compareTo(q)==-1?q:p,phi);
         d = BigInteger.valueOf(modInverse(e.intValue(),phi.intValue()));
+
 
     }
 
@@ -157,6 +163,7 @@ public class MessageRSA {
      */
     private BigInteger decryptInt(BigInteger i){
         return  i.pow(d.intValue()).mod(n); //(i^d)%n);
+
     }
 
     /**
@@ -262,10 +269,16 @@ public class MessageRSA {
         return ma;
     }
 
+    /**
+     * Calculate the inverted modular with the extended euclide algorithm
+     * @param n
+     * @param mod
+     * @return
+     */
     public static int modInverse(int n, int mod) {
         int[] g = extgcd(mod, n);
         if (g[0] != 1)
-            return -1;		// n and mod not coprime
+            throw new ArithmeticException("Mudular calculation impossible "+ n + " and " + mod + " not coprime");
         else
             return reduce(g[2], mod);
     }

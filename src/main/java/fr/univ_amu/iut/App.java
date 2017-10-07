@@ -1,8 +1,6 @@
 package fr.univ_amu.iut;
 
 
-
-
 /**
  * Hello world!
  *
@@ -18,7 +16,6 @@ public class App
             MessageRSA toDecrypt = new MessageRSA(Hey.getCryptedMessage(),Hey.getPrivateKeys()[0],Hey.getPrivateKeys()[1]);
             Hey.generateKey();
             Hey.cryptString();
-
             System.out.println(toDecrypt.getUncryptedMessage());
         }
 

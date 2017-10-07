@@ -1,24 +1,20 @@
 package fr.univ_amu.iut;
 
 import javafx.application.Application;
-import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.image.*;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
-import java.net.URL;
 
 /**
  * Created by l16000440 on 05/10/17.
  */
-public class image extends Application {
 
+public class ImageRSA extends Application {
 
     @Override
-
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Load Image");
         StackPane sp = new StackPane();
