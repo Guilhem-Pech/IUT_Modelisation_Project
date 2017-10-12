@@ -4,6 +4,7 @@ package fr.univ_amu.iut;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Collection;
 
 import static java.lang.Math.random;
 
@@ -208,7 +209,7 @@ public class MessageRSA {
      * Return the crypted message
      * @return the crypted message in an arraylist
      */
-    public ArrayList getCryptedMessage(){
+    public ArrayList<BigInteger> getCryptedMessage(){
         return cryptedmessage;
     }
 
