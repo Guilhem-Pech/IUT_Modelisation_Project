@@ -1,11 +1,18 @@
 package fr.univ_amu.iut;
 
 import javafx.application.Application;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.image.*;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 
 /**
@@ -19,7 +26,7 @@ public class ImageRSA extends Application {
         primaryStage.setTitle("Load Image");
         StackPane sp = new StackPane();
 
-        Image img = new Image("https://image.noelshack.com/fichiers/2017/40/4/1507207673-test.jpg");
+        Image img = new Image("https://image.noelshack.com/fichiers/2017/41/4/1507800197-mario-transparent-background.png");
         PixelReader reader = img.getPixelReader();
         WritableImage dest = new WritableImage((int) img.getWidth(),(int)img.getHeight());
         PixelWriter writer = dest.getPixelWriter();
@@ -34,6 +41,8 @@ public class ImageRSA extends Application {
         }
 
         ImageView imgView = new ImageView(dest);
+
+        saveToFile(img);
         sp.getChildren().add(imgView);
         //Adding HBox to the scene
         Scene scene = new Scene(sp);
@@ -43,9 +52,16 @@ public class ImageRSA extends Application {
 
     }
 
-    public static void main(String[] args) {
-        launch(args);
+    public static void saveToFile(Image image) {
+        File outputFile = new File("Mario");
+        BufferedImage bImage = SwingFXUtils.fromFXImage(image, null);
+        try {
+            ImageIO.write(bImage, "png", outputFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
+
 }
 
 
