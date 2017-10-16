@@ -70,7 +70,6 @@ public class MessageRSA {
         if (a.compareTo(b)== -1) {
             r = b;  b = a; a = r;
         }
-        // It can be assumed that m >= n
         while (b.compareTo(BigInteger.ZERO) == 1) {
             r = a.mod(b);
             a = b;
@@ -271,7 +270,7 @@ public class MessageRSA {
     }
 
     /**
-     * Calculate the inverted modular with the extended euclide algorithm
+     * Calculate the reverse modular with the extended euclide algorithm
      * @param n
      * @param mod
      * @return

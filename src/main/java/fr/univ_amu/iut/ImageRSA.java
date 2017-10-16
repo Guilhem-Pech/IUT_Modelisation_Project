@@ -25,17 +25,18 @@ import java.util.Collection;
 public class ImageRSA extends Application {
 
     private Color encodeColor(Color color,int toEncode){
-        int encodeToR = toEncode & 0b11100000000;
-        int encodeToG = toEncode & 0b00011100000;
-        int encodeToB = toEncode & 0b00000011100;
-        int encodeToA = toEncode & 0b00000000001;
+        int encodeToR = (toEncode & 0b11100000000) >> 8;
+        int encodeToG = (toEncode & 0b00011100000) >> 5;
+        int encodeToB = (toEncode & 0b00000011100) >> 2;
+        int encodeToA = (toEncode & 0b00000000001);
+
 
         double red = ((int)(color.getRed()*255) & 0b11111000) + encodeToR;
         double green = ((int)(color.getGreen()*255) & 0b11111000) + encodeToG;
         double blue = ((int)(color.getBlue()*255) & 0b11111000) + encodeToB;
         double alpha = ((int)(color.getOpacity()*255) & 0b11111110) + encodeToA;
 
-
+        System.out.println(new Color(red/255,green/255,blue/255,alpha/255));
         return new Color(red/255,green/255,blue/255,alpha/255);
     }
 
@@ -62,19 +63,16 @@ public class ImageRSA extends Application {
         PixelReader reader = img.getPixelReader();
         WritableImage dest = new WritableImage((int) img.getWidth(),(int)img.getHeight());
         PixelWriter writer = dest.getPixelWriter();
-
+        int charToCode = 0;
         for (int x =0; x < dest.getWidth();++x){
             for (int y =0; y < dest.getHeight();++y){
-                int charToCode = 0;
-                if ((x + 1) * (y + 1) <= codedMessage.size() - 1){
-                    System.out.println((x + 1) * (y + 1));
-                    codedMessage.get((x + 1) * (y + 1)).intValue();
-                }
-
                 Color color = reader.getColor(x,y);
-                color = this.encodeColor(color,charToCode);
-
+                if ((x*dest.getWidth() + y)<= codedMessage.size() - 1){
+                    charToCode = codedMessage.get((int) (x * dest.getWidth() + y)).intValue();
+                    color = this.encodeColor(color,charToCode);
+                }
                 writer.setColor(x,y,color);
+
             }
         }
 
