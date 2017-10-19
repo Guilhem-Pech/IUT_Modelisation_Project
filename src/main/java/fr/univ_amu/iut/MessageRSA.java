@@ -257,7 +257,6 @@ public class MessageRSA {
             ta = na;  na = ma; ma = ta;
         }
 
-        // It can be assumed that m >= n
         while (na[0] > 0) {
             q = ma[0] / na[0];	// Quotient
             for (i = 0; i < 3; i++) {
