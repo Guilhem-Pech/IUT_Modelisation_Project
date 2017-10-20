@@ -41,22 +41,22 @@ public class ImageRSA extends Application {
 
     private int encodeColor(int color, int toEncode){
 
-        int encodeToR = (toEncode & 0b11100000000) >> 8;
-        int encodeToG = (toEncode & 0b00011100000) >> 5;
-        int encodeToB = (toEncode & 0b00000011100) >> 2;
-        int encodeToA = (toEncode & 0b00000000001);
+        int encodeToR = (toEncode & 0b1110000000) >> 7;
+        int encodeToG = (toEncode & 0b0001110000) >> 4;
+        int encodeToB = (toEncode & 0b0000001110) >> 1;
+        int encodeToA = (toEncode & 0b0000000001);
+
 
 
 
         int[] argb = getIntARGB(color);
-        argb[0] = argb[0] & 0b11111110 + encodeToA;
-        argb[1] = argb[1] & 0b11111000 + encodeToR;
-        argb[2] = argb[2] & 0b11111000 + encodeToG;
-        argb[3] = argb[3] & 0b11111000 + encodeToB;
-
-
+        argb[0] = (argb[0] & 0b11111110) + encodeToA;
+        argb[1] = (argb[1] & 0b11111000) + encodeToR;
+        argb[2] = (argb[2] & 0b11111000) + encodeToG;
+        argb[3] = (argb[3] & 0b11111000) + encodeToB;
+        System.out.println(toEncode + " coded");
+        System.out.println(decodeColor(0b100000000);
         return getARBGInt(argb[0],argb[1],argb[2],argb[3]);
-
     }
 
     private BigInteger decodeColor(int color){
@@ -65,19 +65,15 @@ public class ImageRSA extends Application {
         int green = argb[2];
         int blue = argb[3];
         int alpha = argb[0];
-
-        int codedOnR = (red & 0b00000111) << 8;
-        int codedOnG = (green & 0b00000111) << 5;
-        int codedOnB = (blue & 0b00000111) << 2;
+        int codedOnR = (red & 0b00000111) << 7;
+        int codedOnG = (green & 0b00000111) << 4;
+        int codedOnB = (blue & 0b00000111) << 1;
         int codedOnA = (alpha & 0b00000001);
-
-
-        System.out.println(codedOnG+ " to decode");
-
+        System.out.println(codedOnR + codedOnG + codedOnB + codedOnA);
         return BigInteger.valueOf(codedOnR + codedOnG + codedOnB + codedOnA);
 
     }
-
+        
     @Override
     public void start(Stage primaryStage) {
         MessageRSA message = new MessageRSA("Ceci est un message de test les amis !");
@@ -86,7 +82,7 @@ public class ImageRSA extends Application {
         primaryStage.setTitle("Load Image");
         StackPane sp = new StackPane();
 
-        Image img = new Image("http://www.fnordware.com/superpng/pnggrad8rgb.png");
+        Image img = new Image("https://cdn.pixabay.com/photo/2017/07/11/17/45/sunset-2494419_960_720.png");
         PixelReader reader = img.getPixelReader();
         WritableImage dest = new WritableImage((int) img.getWidth(),(int)img.getHeight());
         PixelWriter writer = dest.getPixelWriter();
