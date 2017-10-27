@@ -84,8 +84,8 @@ public class MessageRSA {
      * @param k max
      * @return
      */
-   private static int random_between(int j,int k){
-        return (int) (random()*(k-j+1)+j);
+   private static long random_between(long j,long k){
+        return (long) (random()*(k-j+1)+j);
     }
 
     private static BigInteger randFirstNumber(BigInteger min,BigInteger a){
@@ -109,7 +109,6 @@ public class MessageRSA {
      * Generate the public and the private key
      */
     public void generateKey(){
-
         p = BigInteger.probablePrime(5,new SecureRandom());
         q = BigInteger.probablePrime(5,new SecureRandom());
         while(p.equals(q))
@@ -120,17 +119,17 @@ public class MessageRSA {
         BigInteger phi = (p.subtract(BigInteger.ONE)).multiply(q.subtract(BigInteger.ONE));
 
         e = randFirstNumber(p.compareTo(q)==-1?q:p,phi);
-        d = BigInteger.valueOf(modInverse(e.intValue(),phi.intValue()));
+        d = BigInteger.valueOf(modInverse(e.longValue(),phi.longValue()));
 
 
     }
 
     /**
-     * Crypt an int given
+     * Crypt a long given
      * @param i
      * @return
      */
-    private BigInteger cryptInt(int i){
+    private BigInteger cryptLong(long i){
         return BigInteger.valueOf(i).pow(e.intValue()).mod(n);//(i^e)%n;
     }
 
@@ -140,7 +139,7 @@ public class MessageRSA {
      * @return
      */
     private BigInteger cryptChar(char k){
-        return cryptInt((int)k);
+        return cryptLong((long)k);
     }
 
     /**
@@ -161,9 +160,8 @@ public class MessageRSA {
      * @param i
      * @return
      */
-    private BigInteger decryptInt(BigInteger i){
+    private BigInteger decryptLong(BigInteger i){
         return  i.pow(d.intValue()).mod(n); //(i^d)%n);
-
     }
 
     /**
@@ -172,7 +170,7 @@ public class MessageRSA {
     public void decryptString(){
         decryptedMessage = "";
         for (BigInteger c: cryptedmessage ) {
-            decryptedMessage += (char)decryptInt(c).intValue();
+            decryptedMessage += (char)decryptLong(c).longValue();
         }
     }
 
@@ -226,8 +224,8 @@ public class MessageRSA {
      * @param mod the modulo
      * @return the integer k such that k = n [mod] et 0 <= k < mod
      */
-    public static int reduce(int n, int mod) {
-        int m = n % mod;	// -mod < m < mod
+    public static long reduce(long n, long mod) {
+        long m = n % mod;	// -mod < m < mod
 
         if (m >= 0 )
             return m;
@@ -237,26 +235,27 @@ public class MessageRSA {
 
     /**
      * Computes the GCD and the coefficients of the Bezout equality.
-     * @param m the first integer
-     * @param n the second integer
+     * @param m the first long
+     * @param n the second long
      * @return an array g of 3 integers.  g[0] is the GCD of m and n.
      *  g[1] and g[2] are two integers such that g[0] = m g[1] + n g[2].
      */
-    public static int[] extgcd(int m, int n) {
+    public static long[] extgcd(long m, long n) {
         // Both arrays ma and na are arrays of 3 integers such that
         // ma[0] = m ma[1] + n ma[2] and na[0] = m na[1] + n na[2]
-        int[] ma = new int[]  {m, 1, 0};
-        int[] na = new int[]  {n, 0, 1};
-        int[] ta;		// Temporary variable
+        long[] ma = new long[]  {m, 1, 0};
+        long[] na = new long[]  {n, 0, 1};
+        long[] ta;		// Temporary variable
         int i;			// Loop index
-        int q;			// Quotient
-        int r;			// Rest
+        long q;			// Quotient
+        long r;			// Rest
 
         // Exchange ma and na if m < n
         if (m < n) {
             ta = na;  na = ma; ma = ta;
         }
 
+        // It can be assumed that m >= n
         while (na[0] > 0) {
             q = ma[0] / na[0];	// Quotient
             for (i = 0; i < 3; i++) {
@@ -274,11 +273,19 @@ public class MessageRSA {
      * @param mod
      * @return
      */
-    public static int modInverse(int n, int mod) {
-        int[] g = extgcd(mod, n);
+    public static long modInverse(long n, long mod) {
+        long[] g = extgcd(mod, n);
         if (g[0] != 1)
             throw new ArithmeticException("Mudular calculation impossible "+ n + " and " + mod + " not coprime");
         else
             return reduce(g[2], mod);
+    }
+
+    @Override
+    public String toString() {
+        return "MessageRSA{" +
+                "cryptedmessage=" + cryptedmessage + '\n' +
+                ", decryptedMessage='" + decryptedMessage + '\'' +
+                '}';
     }
 }

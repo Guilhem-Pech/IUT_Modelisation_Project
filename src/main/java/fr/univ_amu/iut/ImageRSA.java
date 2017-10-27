@@ -26,17 +26,17 @@ import java.util.ArrayList;
 
 public class ImageRSA extends Application {
 
-    public static int[] getIntARGB(int rgb){
-        int argb[] = new int[4];
-        argb[0] = (rgb >> 24) & 0xFF;
-        argb[1] =   (rgb >> 16) & 0xFF;
-        argb[2] = (rgb >>  8) & 0xFF;
-        argb[3] =  (rgb) & 0xFF;
+    public static int[] getIntARGB(int argb){
+        int[] result = new int[4];
+        result[0] = (argb & 0xff000000) >> 24;
+        result[1] = (argb & 0x00FF0000) >> 16;
+        result[2] = (argb & 0x0000FF00) >> 8;
+        result[3] = (argb & 0x000000FF);
 
-        return argb;
+        return result;
     }
     public static int getARBGInt(int a, int r, int g, int b) {
-        return ((a << 24) | 0xFF) + ((r << 16) | 0xFF) + ((g << 8) | 0xFF) + (b | 0xFF);
+        return ((a << 24)) + ((r << 16)) + ((g << 8)) + (b);
     }
 
     private int encodeColor(int color, int toEncode){
@@ -50,12 +50,13 @@ public class ImageRSA extends Application {
 
 
         int[] argb = getIntARGB(color);
+        int intargb = getARBGInt(argb[0],argb[1],argb[2],argb[3]);
+
         argb[0] = (argb[0] & 0b11111110) + encodeToA;
         argb[1] = (argb[1] & 0b11111000) + encodeToR;
         argb[2] = (argb[2] & 0b11111000) + encodeToG;
         argb[3] = (argb[3] & 0b11111000) + encodeToB;
         System.out.println(toEncode + " coded");
-        System.out.println(decodeColor(0b100000000);
         return getARBGInt(argb[0],argb[1],argb[2],argb[3]);
     }
 
@@ -73,10 +74,9 @@ public class ImageRSA extends Application {
         return BigInteger.valueOf(codedOnR + codedOnG + codedOnB + codedOnA);
 
     }
-        
     @Override
     public void start(Stage primaryStage) {
-        MessageRSA message = new MessageRSA("Ceci est un message de test les amis !");
+        MessageRSA message = new MessageRSA(String.format("Ceci est un message de test les amis"));
         ArrayList<BigInteger> codedMessage = (ArrayList<BigInteger>) message.getCryptedMessage();
 
         primaryStage.setTitle("Load Image");
@@ -122,7 +122,7 @@ public class ImageRSA extends Application {
             }
         }
         MessageRSA messageRSA = new MessageRSA(code,message.getPrivateKeys()[0],message.getPrivateKeys()[1]);
-
+        System.out.println(messageRSA);
 
     }
 
