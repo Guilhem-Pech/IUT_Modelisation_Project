@@ -9,13 +9,9 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 import javax.imageio.ImageIO;
-import javax.imageio.stream.FileCacheImageInputStream;
-import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.ImageInputStreamImpl;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,7 +78,8 @@ public class ImageRSA extends Application {
         Scene scene = new Scene(sp);
         primaryStage.setScene(scene);
         primaryStage.show();
-        MessageRSA messageRSA = getMessageRSA (message, endMessage);
+        Image imgToDecrypt = new Image ("file:Mario");
+        MessageRSA messageRSA = getMessageRSA (message, endMessage, imgToDecrypt);
         System.out.println(messageRSA);
 
     }
@@ -105,7 +102,6 @@ public class ImageRSA extends Application {
                 int argb = reader.getArgb(x,y);
                 if ((x*dest.getWidth() + y)<= codedMessage.size() - 1){
                     charToCode = codedMessage.get((int) (x * dest.getWidth() + y)).intValue();
-
                     int encodedargb = this.encodeColor(argb,charToCode);
                     writer.setArgb(x,y,encodedargb);
                 }else if (paternFound < endMessage.length ()){
@@ -119,9 +115,9 @@ public class ImageRSA extends Application {
         return dest;
     }
 
-    private MessageRSA getMessageRSA(MessageRSA message, String endMessage) {
+    private MessageRSA getMessageRSA(MessageRSA message, String endMessage, Image todecrypt) {
         int paternFound = 0;
-        Image todecrypt = new Image ("file:Mario");
+
         PixelReader pixelReader = todecrypt.getPixelReader ();
         ArrayList<BigInteger> code = new ArrayList<> ();
         for (int x = 0 ; x < todecrypt.getWidth () ; ++x) {
@@ -132,6 +128,8 @@ public class ImageRSA extends Application {
                 BigInteger decoded = decodeColor (argb);
                 if ((char) decoded.intValue () == endMessage.charAt (paternFound))
                     paternFound += 1;
+                else
+                    paternFound = 0;
                 code.add (decoded);
             }
         }
