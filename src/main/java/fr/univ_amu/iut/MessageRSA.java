@@ -1,7 +1,7 @@
 package fr.univ_amu.iut;
 
 
-import java.math.BigInteger;
+    import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,7 +35,7 @@ public class MessageRSA {
 
     /**
      * This constructor built the object and crypt the message given
-     * @param message
+     * @param message Clear message
      */
     public MessageRSA(String message){
         this();
@@ -47,7 +47,7 @@ public class MessageRSA {
 
     /**
      * Constructor built the object and uncrypt a message given with the private key
-     * @param message
+     * @param message crypted message
      * @param n
      * @param d
      */

@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.lang.reflect.Array;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -46,17 +47,12 @@ public class ImageRSA extends Application {
         int encodeToB = (toEncode & 0b0000001110) >> 1;
         int encodeToA = (toEncode & 0b0000000001);
 
-
-
-
         int[] argb = getIntARGB(color);
-        int intargb = getARBGInt(argb[0],argb[1],argb[2],argb[3]);
 
         argb[0] = (argb[0] & 0b11111110) + encodeToA;
         argb[1] = (argb[1] & 0b11111000) + encodeToR;
         argb[2] = (argb[2] & 0b11111000) + encodeToG;
         argb[3] = (argb[3] & 0b11111000) + encodeToB;
-        System.out.println(toEncode + " coded");
         return getARBGInt(argb[0],argb[1],argb[2],argb[3]);
     }
 
@@ -70,60 +66,80 @@ public class ImageRSA extends Application {
         int codedOnG = (green & 0b00000111) << 4;
         int codedOnB = (blue & 0b00000111) << 1;
         int codedOnA = (alpha & 0b00000001);
-        System.out.println(codedOnR + codedOnG + codedOnB + codedOnA);
         return BigInteger.valueOf(codedOnR + codedOnG + codedOnB + codedOnA);
 
     }
     @Override
     public void start(Stage primaryStage) {
-        MessageRSA message = new MessageRSA(String.format("Ceci est un message de test les amis"));
-        ArrayList<BigInteger> codedMessage = (ArrayList<BigInteger>) message.getCryptedMessage();
-
+        MessageRSA message = new MessageRSA(String.format("J'ai enfin fais fonctionner le bidule"));
+        String endMessage = "/endMessage";
         primaryStage.setTitle("Load Image");
         StackPane sp = new StackPane();
-
         Image img = new Image("https://cdn.pixabay.com/photo/2017/07/11/17/45/sunset-2494419_960_720.png");
-        PixelReader reader = img.getPixelReader();
-        WritableImage dest = new WritableImage((int) img.getWidth(),(int)img.getHeight());
-        PixelWriter writer = dest.getPixelWriter();
-        int charToCode = 0;
-        for (int x =0; x < dest.getWidth();++x){
-            for (int y =0; y < dest.getHeight();++y){
-                Color color = reader.getColor(x,y);
-                if ((x*dest.getWidth() + y)<= codedMessage.size() - 1){
-                    charToCode = codedMessage.get((int) (x * dest.getWidth() + y)).intValue();
-                    int argb = reader.getArgb(x,y);
-                    int encodedargb = this.encodeColor(argb,charToCode);
-                    writer.setArgb(x,y,encodedargb);
-
-                }else
-                writer.setColor(x,y,Color.BEIGE);
-
-            }
-        }
-
-        ImageView imgView = new ImageView(dest);
-
-        saveToFile(dest);
+        ImageView imgView = getCryptedImageView (message, endMessage, img);
+        saveToFile(getCryptedWritableImage (message,endMessage,img));
         sp.getChildren().add(imgView);
-        //Adding HBox to the scene
         Scene scene = new Scene(sp);
         primaryStage.setScene(scene);
         primaryStage.show();
-
-
-        Image todecrypt = new Image("file:Mario");
-        PixelReader pixelReader = todecrypt.getPixelReader();
-        ArrayList<BigInteger> code = new ArrayList<>();
-        for (int x =0; x < 1;++x) {
-            for (int y = 0; y < message.getUncryptedMessage().length(); ++y) {
-                int argb = pixelReader.getArgb(x,y);
-                code.add(decodeColor(argb));
-            }
-        }
-        MessageRSA messageRSA = new MessageRSA(code,message.getPrivateKeys()[0],message.getPrivateKeys()[1]);
+        MessageRSA messageRSA = getMessageRSA (message, endMessage);
         System.out.println(messageRSA);
 
+    }
+
+    private ImageView getCryptedImageView(MessageRSA message, String endMessage, Image img) {
+        WritableImage dest = getCryptedWritableImage (message, endMessage, img);
+        return new ImageView(dest);
+    }
+
+    private WritableImage getCryptedWritableImage(MessageRSA message, String endMessage, Image img) {
+        ArrayList<BigInteger> codedMessage = message.getCryptedMessage();
+        int paternFound = 0;
+        PixelReader reader = img.getPixelReader();
+        WritableImage dest = new WritableImage((int) img.getWidth(),(int)img.getHeight());
+        PixelWriter writer = dest.getPixelWriter();
+        int charToCode;
+        for (int x =0; x < dest.getWidth();++x){
+            for (int y =0; y < dest.getHeight();++y){
+                Color color = reader.getColor(x,y);
+                int argb = reader.getArgb(x,y);
+                if ((x*dest.getWidth() + y)<= codedMessage.size() - 1){
+                    charToCode = codedMessage.get((int) (x * dest.getWidth() + y)).intValue();
+
+                    int encodedargb = this.encodeColor(argb,charToCode);
+                    writer.setArgb(x,y,encodedargb);
+                }else if (paternFound < endMessage.length ()){
+                    writer.setArgb (x,y,encodeColor (argb,endMessage.charAt (paternFound)));
+                    paternFound += 1;
+                }else
+                    writer.setColor(x,y,color);
+            }
+        }
+
+        return dest;
+    }
+
+    private MessageRSA getMessageRSA(MessageRSA message, String endMessage) {
+        int paternFound = 0;
+        Image todecrypt = new Image ("file:Mario");
+        PixelReader pixelReader = todecrypt.getPixelReader ();
+        ArrayList<BigInteger> code = new ArrayList<> ();
+        for (int x = 0 ; x < todecrypt.getWidth () ; ++x) {
+            for (int y = 0 ; y < todecrypt.getHeight () ; ++y) {
+                if (paternFound == endMessage.length ())
+                    break;
+                int argb = pixelReader.getArgb (x, y);
+                BigInteger decoded = decodeColor (argb);
+                if ((char) decoded.intValue () == endMessage.charAt (paternFound))
+                    paternFound += 1;
+                code.add (decoded);
+            }
+        }
+        List<BigInteger> realMessage = code.subList (0,code.size () - endMessage.length ());
+        code = new ArrayList<> ();
+        code.addAll (realMessage);
+
+        return new MessageRSA (code, message.getPrivateKeys ()[0], message.getPrivateKeys ()[1]);
     }
 
     public static void saveToFile(Image image) {
