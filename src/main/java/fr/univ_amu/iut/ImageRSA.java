@@ -104,7 +104,7 @@ public class ImageRSA {
      * @param img
      * @return
      */
-    WritableImage getCryptedWritableImage(MessageRSA message, String endMessage, Image img) throws IOException {
+    WritableImage getCryptedWritableImage(MessageRSA message, String endMessage, Image img) {
         ArrayList<BigInteger> codedMessage = message.getCryptedMessage();
         int paternFound = 0;
         PixelReader reader = img.getPixelReader();
@@ -120,8 +120,6 @@ public class ImageRSA {
                     charToCode = codedMessage.get((int) (x * dest.getWidth() + y)).intValue();
                     int encodedargb = encodeColor(argb, charToCode);
                     writer.setArgb(x, y, encodedargb);
-                    if(readX.getArgb(x,y) != encodedargb)
-                        throw new IOException("Error writing pixel color please select another image");
                 } else if (paternFound < endMessage.length()) {
                     int codedArgb = encodeColor(argb, endMessage.charAt(paternFound));
                     writer.setArgb(x, y, codedArgb);

@@ -112,13 +112,7 @@ public class InterfaceGraphique extends Application {
                 errorMessage("ERROR",img.getException().toString());
                 return;
             }
-            WritableImage encryptedImage = null;
-            try {
-                encryptedImage = ImageRSA.getCryptedWritableImage(message, endMessage, img);
-            } catch (IOException e1) {
-                e1.printStackTrace();
-                errorMessage("Error",e1.getMessage());
-            }
+            WritableImage encryptedImage = ImageRSA.getCryptedWritableImage(message, endMessage, img);
             ImageRSA.saveToFile(encryptedImage,pathEncode.getText(0,pathEncode.getLength()-4)+"_encoded.png");
         }
     }
