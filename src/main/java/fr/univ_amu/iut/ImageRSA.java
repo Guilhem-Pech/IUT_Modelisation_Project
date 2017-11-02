@@ -92,7 +92,7 @@ public class ImageRSA {
      * @param img The image
      * @return
      */
-    ImageView getCryptedImageView(MessageRSA message, String endMessage, Image img) {
+    ImageView getCryptedImageView(MessageRSA message, String endMessage, Image img) throws IOException {
         WritableImage dest = getCryptedWritableImage(message, endMessage, img);
         return new ImageView(dest);
     }
@@ -104,12 +104,13 @@ public class ImageRSA {
      * @param img
      * @return
      */
-    WritableImage getCryptedWritableImage(MessageRSA message, String endMessage, Image img) {
+    WritableImage getCryptedWritableImage(MessageRSA message, String endMessage, Image img) throws IOException {
         ArrayList<BigInteger> codedMessage = message.getCryptedMessage();
         int paternFound = 0;
         PixelReader reader = img.getPixelReader();
         WritableImage dest = new WritableImage(reader,(int) img.getWidth(), (int) img.getHeight());
         PixelWriter writer = dest.getPixelWriter();
+        PixelReader readX = dest.getPixelReader();
         int charToCode;
         for (int x = 0; x < dest.getWidth(); ++x) {
             for (int y = 0; y < dest.getHeight(); ++y) {
@@ -119,8 +120,11 @@ public class ImageRSA {
                     charToCode = codedMessage.get((int) (x * dest.getWidth() + y)).intValue();
                     int encodedargb = encodeColor(argb, charToCode);
                     writer.setArgb(x, y, encodedargb);
+                    if(readX.getArgb(x,y) != encodedargb)
+                        throw new IOException("Error wrinting pixel color please select another image");
                 } else if (paternFound < endMessage.length()) {
-                    writer.setArgb(x, y, encodeColor(argb, endMessage.charAt(paternFound)));
+                    int codedArgb = encodeColor(argb, endMessage.charAt(paternFound));
+                    writer.setArgb(x, y, codedArgb);
                     paternFound += 1;
                 } else
                   writer.setColor(x, y, color);
