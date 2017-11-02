@@ -121,7 +121,7 @@ public class ImageRSA {
                     int encodedargb = encodeColor(argb, charToCode);
                     writer.setArgb(x, y, encodedargb);
                     if(readX.getArgb(x,y) != encodedargb)
-                        throw new IOException("Error wrinting pixel color please select another image");
+                        throw new IOException("Error writing pixel color please select another image");
                 } else if (paternFound < endMessage.length()) {
                     int codedArgb = encodeColor(argb, endMessage.charAt(paternFound));
                     writer.setArgb(x, y, codedArgb);
