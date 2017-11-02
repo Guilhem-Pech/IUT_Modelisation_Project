@@ -16,6 +16,11 @@ public class ImageRSA {
     public ImageRSA() {
     }
 
+    /**
+     * Decompose the argb level
+     * @param argb
+     * @return [0] = Alpha ; [1] = Red ; [2] = Green ; [2] = Blue
+     */
     public static int[] getIntARGB(int argb) {
         int[] result = new int[4];
         result[0] = (argb & 0xff000000) >> 24;
@@ -26,10 +31,24 @@ public class ImageRSA {
         return result;
     }
 
+    /**
+     * Recompose the ARGB level
+     * @param a Alpha
+     * @param r Red
+     * @param g Green
+     * @param b Blue
+     * @return
+     */
     public static int getARBGInt(int a, int r, int g, int b) {
         return ((a << 24)) + ((r << 16)) + ((g << 8)) + (b);
     }
 
+    /**
+     * 'Insert' an int into a pixel
+     * @param color color to modify
+     * @param toEncode int to hide
+     * @return ARGB level of the color with the int inside
+     */
     private int encodeColor(int color, int toEncode) {
 
         int encodeToR = (toEncode & 0b1110000000) >> 7;
@@ -43,9 +62,15 @@ public class ImageRSA {
         argb[1] = (argb[1] & 0b11111000) + encodeToR;
         argb[2] = (argb[2] & 0b11111000) + encodeToG;
         argb[3] = (argb[3] & 0b11111000) + encodeToB;
+
         return getARBGInt(argb[0], argb[1], argb[2], argb[3]);
     }
 
+    /**
+     * Get the int inside a color
+     * @param color
+     * @return the int hiden
+     */
     private BigInteger decodeColor(int color) {
         int[] argb = getIntARGB(color);
         int red = argb[1];
@@ -60,16 +85,30 @@ public class ImageRSA {
 
     }
 
+    /**
+     * Crypt the message in the image and return an ImageView of it
+     * @param message RSA
+     * @param endMessage end pattern of a message
+     * @param img The image
+     * @return
+     */
     ImageView getCryptedImageView(MessageRSA message, String endMessage, Image img) {
         WritableImage dest = getCryptedWritableImage(message, endMessage, img);
         return new ImageView(dest);
     }
 
+    /**
+     * Crypt the message in the image and return an WritableImage of it
+     * @param message RSA
+     * @param endMessage  end pattern of a message
+     * @param img
+     * @return
+     */
     WritableImage getCryptedWritableImage(MessageRSA message, String endMessage, Image img) {
         ArrayList<BigInteger> codedMessage = message.getCryptedMessage();
         int paternFound = 0;
         PixelReader reader = img.getPixelReader();
-        WritableImage dest = new WritableImage((int) img.getWidth(), (int) img.getHeight());
+        WritableImage dest = new WritableImage(reader,(int) img.getWidth(), (int) img.getHeight());
         PixelWriter writer = dest.getPixelWriter();
         int charToCode;
         for (int x = 0; x < dest.getWidth(); ++x) {
@@ -91,20 +130,27 @@ public class ImageRSA {
         return dest;
     }
 
+    /**
+     * Decrypt the message in an image
+     * @param n Private key
+     * @param d Private key
+     * @param endMessage end message pattern
+     * @param todecrypt image to decrypt
+     * @return
+     */
     public MessageRSA getMessageRSA(BigInteger n, BigInteger d, String endMessage, Image todecrypt) {
         int patternFound = 0;
-
         PixelReader pixelReader = todecrypt.getPixelReader();
         ArrayList<BigInteger> code = new ArrayList<>();
         for (int x = 0; x < todecrypt.getWidth(); ++x) {
             for (int y = 0; y < todecrypt.getHeight(); ++y) {
                 if (patternFound == endMessage.length())
                     break;
+
                 int argb = pixelReader.getArgb(x, y);
                 BigInteger decoded = decodeColor(argb);
                 if ((char) decoded.intValue() == endMessage.charAt(patternFound)) {
                     patternFound += 1;
-
                 }
                 else
                     patternFound = 0;
@@ -118,6 +164,11 @@ public class ImageRSA {
         return new MessageRSA(code, n, d);
     }
 
+    /**
+     * Save an image into a file
+     * @param image
+     * @param path
+     */
     public static void saveToFile(Image image,String path) {
         File outputFile = new File(path);
         BufferedImage bImage = SwingFXUtils.fromFXImage(image, null);
