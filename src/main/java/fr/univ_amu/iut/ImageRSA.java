@@ -1,12 +1,8 @@
 package fr.univ_amu.iut;
 
-import javafx.application.Application;
 import javafx.embed.swing.SwingFXUtils;
-import javafx.scene.Scene;
 import javafx.scene.image.*;
-import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import javafx.stage.Stage;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -16,14 +12,11 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+public class ImageRSA {
+    public ImageRSA() {
+    }
 
-/**
- * Created by l16000440 on 05/10/17.
- */
-
-public class ImageRSA extends Application {
-
-    public static int[] getIntARGB(int argb){
+    public static int[] getIntARGB(int argb) {
         int[] result = new int[4];
         result[0] = (argb & 0xff000000) >> 24;
         result[1] = (argb & 0x00FF0000) >> 16;
@@ -32,11 +25,12 @@ public class ImageRSA extends Application {
 
         return result;
     }
+
     public static int getARBGInt(int a, int r, int g, int b) {
         return ((a << 24)) + ((r << 16)) + ((g << 8)) + (b);
     }
 
-    private int encodeColor(int color, int toEncode){
+    private int encodeColor(int color, int toEncode) {
 
         int encodeToR = (toEncode & 0b1110000000) >> 7;
         int encodeToG = (toEncode & 0b0001110000) >> 4;
@@ -49,10 +43,10 @@ public class ImageRSA extends Application {
         argb[1] = (argb[1] & 0b11111000) + encodeToR;
         argb[2] = (argb[2] & 0b11111000) + encodeToG;
         argb[3] = (argb[3] & 0b11111000) + encodeToB;
-        return getARBGInt(argb[0],argb[1],argb[2],argb[3]);
+        return getARBGInt(argb[0], argb[1], argb[2], argb[3]);
     }
 
-    private BigInteger decodeColor(int color){
+    private BigInteger decodeColor(int color) {
         int[] argb = getIntARGB(color);
         int red = argb[1];
         int green = argb[2];
@@ -65,83 +59,67 @@ public class ImageRSA extends Application {
         return BigInteger.valueOf(codedOnR + codedOnG + codedOnB + codedOnA);
 
     }
-    @Override
-    public void start(Stage primaryStage) {
-        MessageRSA message = new MessageRSA(String.format("J'ai enfin fais fonctionner le bidule"));
-        String endMessage = "/endMessage";
-        primaryStage.setTitle("Load Image");
-        StackPane sp = new StackPane();
-        Image img = new Image("https://cdn.pixabay.com/photo/2017/07/11/17/45/sunset-2494419_960_720.png");
-        ImageView imgView = getCryptedImageView (message, endMessage, img);
-        saveToFile(getCryptedWritableImage (message,endMessage,img));
-        sp.getChildren().add(imgView);
-        Scene scene = new Scene(sp);
-        primaryStage.setScene(scene);
-        primaryStage.show();
-        Image imgToDecrypt = new Image ("file:Mario");
-        MessageRSA messageRSA = getMessageRSA (message, endMessage, imgToDecrypt);
-        System.out.println(messageRSA);
 
-    }
-
-    private ImageView getCryptedImageView(MessageRSA message, String endMessage, Image img) {
-        WritableImage dest = getCryptedWritableImage (message, endMessage, img);
+    ImageView getCryptedImageView(MessageRSA message, String endMessage, Image img) {
+        WritableImage dest = getCryptedWritableImage(message, endMessage, img);
         return new ImageView(dest);
     }
 
-    private WritableImage getCryptedWritableImage(MessageRSA message, String endMessage, Image img) {
+    WritableImage getCryptedWritableImage(MessageRSA message, String endMessage, Image img) {
         ArrayList<BigInteger> codedMessage = message.getCryptedMessage();
         int paternFound = 0;
         PixelReader reader = img.getPixelReader();
-        WritableImage dest = new WritableImage((int) img.getWidth(),(int)img.getHeight());
+        WritableImage dest = new WritableImage((int) img.getWidth(), (int) img.getHeight());
         PixelWriter writer = dest.getPixelWriter();
         int charToCode;
-        for (int x =0; x < dest.getWidth();++x){
-            for (int y =0; y < dest.getHeight();++y){
-                Color color = reader.getColor(x,y);
-                int argb = reader.getArgb(x,y);
-                if ((x*dest.getWidth() + y)<= codedMessage.size() - 1){
+        for (int x = 0; x < dest.getWidth(); ++x) {
+            for (int y = 0; y < dest.getHeight(); ++y) {
+                Color color = reader.getColor(x, y);
+                int argb = reader.getArgb(x, y);
+                if ((x * dest.getWidth() + y) <= codedMessage.size() - 1) {
                     charToCode = codedMessage.get((int) (x * dest.getWidth() + y)).intValue();
-                    int encodedargb = this.encodeColor(argb,charToCode);
-                    writer.setArgb(x,y,encodedargb);
-                }else if (paternFound < endMessage.length ()){
-                    writer.setArgb (x,y,encodeColor (argb,endMessage.charAt (paternFound)));
+                    int encodedargb = encodeColor(argb, charToCode);
+                    writer.setArgb(x, y, encodedargb);
+                } else if (paternFound < endMessage.length()) {
+                    writer.setArgb(x, y, encodeColor(argb, endMessage.charAt(paternFound)));
                     paternFound += 1;
-                }else
-                    writer.setColor(x,y,color);
+                } else
+                  writer.setColor(x, y, color);
             }
         }
 
         return dest;
     }
 
-    private MessageRSA getMessageRSA(MessageRSA message, String endMessage, Image todecrypt) {
-        int paternFound = 0;
+    public MessageRSA getMessageRSA(BigInteger n, BigInteger d, String endMessage, Image todecrypt) {
+        int patternFound = 0;
 
-        PixelReader pixelReader = todecrypt.getPixelReader ();
-        ArrayList<BigInteger> code = new ArrayList<> ();
-        for (int x = 0 ; x < todecrypt.getWidth () ; ++x) {
-            for (int y = 0 ; y < todecrypt.getHeight () ; ++y) {
-                if (paternFound == endMessage.length ())
+        PixelReader pixelReader = todecrypt.getPixelReader();
+        ArrayList<BigInteger> code = new ArrayList<>();
+        for (int x = 0; x < todecrypt.getWidth(); ++x) {
+            for (int y = 0; y < todecrypt.getHeight(); ++y) {
+                if (patternFound == endMessage.length())
                     break;
-                int argb = pixelReader.getArgb (x, y);
-                BigInteger decoded = decodeColor (argb);
-                if ((char) decoded.intValue () == endMessage.charAt (paternFound))
-                    paternFound += 1;
+                int argb = pixelReader.getArgb(x, y);
+                BigInteger decoded = decodeColor(argb);
+                if ((char) decoded.intValue() == endMessage.charAt(patternFound)) {
+                    patternFound += 1;
+
+                }
                 else
-                    paternFound = 0;
-                code.add (decoded);
+                    patternFound = 0;
+                code.add(decoded);
             }
         }
-        List<BigInteger> realMessage = code.subList (0,code.size () - endMessage.length ());
-        code = new ArrayList<> ();
-        code.addAll (realMessage);
+        List<BigInteger> realMessage = code.subList(0, code.size() - endMessage.length());
+        code = new ArrayList<>();
+        code.addAll(realMessage);
 
-        return new MessageRSA (code, message.getPrivateKeys ()[0], message.getPrivateKeys ()[1]);
+        return new MessageRSA(code, n, d);
     }
 
-    public static void saveToFile(Image image) {
-        File outputFile = new File("Mario");
+    public static void saveToFile(Image image,String path) {
+        File outputFile = new File(path);
         BufferedImage bImage = SwingFXUtils.fromFXImage(image, null);
         try {
             ImageIO.write(bImage, "png", outputFile);
@@ -149,7 +127,4 @@ public class ImageRSA extends Application {
             throw new RuntimeException(e);
         }
     }
-
 }
-
-

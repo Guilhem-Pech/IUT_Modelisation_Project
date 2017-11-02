@@ -34,7 +34,7 @@ public class MessageRSA {
     }
 
     /**
-     * This constructor built the object and crypt the message given
+     * This constructor built the object and crypt the message given (generate the keys)
      * @param message Clear message
      */
     public MessageRSA(String message){
@@ -44,6 +44,19 @@ public class MessageRSA {
         this.cryptString();
     }
 
+    /**
+     * This constructor built the object and crypt the message given (with the given public key)
+     * @param decryptedMessage clear message
+     * @param n
+     * @param e
+     */
+    public MessageRSA(String decryptedMessage, BigInteger n, BigInteger e) {
+        this();
+        this.decryptedMessage = decryptedMessage;
+        this.n = n;
+        this.e = e;
+        this.cryptString();
+    }
 
     /**
      * Constructor built the object and uncrypt a message given with the private key
@@ -146,8 +159,6 @@ public class MessageRSA {
      * Crypt the uncrypted message
      */
     public void cryptString(){
-        if (p == null || d == null )
-            this.generateKey();
         cryptedmessage.clear();
         for (char c: decryptedMessage.toCharArray()) {
             cryptedmessage.add(cryptChar(c));
