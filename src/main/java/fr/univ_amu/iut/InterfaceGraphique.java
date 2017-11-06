@@ -77,7 +77,7 @@ public class InterfaceGraphique extends Application {
         choose.setTitle(title);
         choose.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG Image","*.png"));
         File choosenFile = choose.showOpenDialog(new Stage());
-        if (choosenFile.exists() && choosenFile.canRead()){
+        if (choosenFile != null && choosenFile.exists() && choosenFile.canRead()){
             textField.setText(choosenFile.getPath());
         }
     }
